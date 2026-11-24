@@ -1,40 +1,41 @@
+"""Standalone OpenCV window for checking the gesture model without the web dashboard.
+
+Usage: python webcam.py [--camera 0] [--conf 0.5]   (press q to quit)
+"""
+import argparse
+
 import cv2
 from ultralytics import YOLO
 
-# 1. Load your AI "brain" into the system
-model = YOLO('best.pt')
+from smartsight.config import settings
 
-# 2. Start the Webcam (0 is usually the default laptop camera)
-cap = cv2.VideoCapture(0)
 
-print("🚀 Starting SmartSight... Press 'q' to exit the program.")
-print("💡 MANUAL: Index finger = LEFT | Thumb = RIGHT")
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--camera", type=int, default=settings.camera_index)
+    parser.add_argument("--conf", type=float, default=settings.conf_threshold)
+    parser.add_argument("--model", default=str(settings.model_path))
+    args = parser.parse_args()
 
-while cap.isOpened():
-    # Read each frame from the Webcam
-    success, frame = cap.read()
-    if not success:
-        print("❌ Cannot connect to the Webcam!")
-        break
+    model = YOLO(args.model)
+    cap = cv2.VideoCapture(args.camera)
+    if not cap.isOpened():
+        raise SystemExit(f"Cannot open camera {args.camera}")
+    print(f"Classes: {model.names}. Press 'q' to quit.")
+    try:
+        while True:
+            ok, frame = cap.read()
+            if not ok:
+                break
+            frame = cv2.flip(frame, 1)
+            results = model.predict(frame, imgsz=settings.imgsz, conf=args.conf, verbose=False)
+            cv2.imshow("SmartSight - gesture check", results[0].plot())
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+    finally:
+        cap.release()
+        cv2.destroyAllWindows()
 
-    # Flip the image horizontally to act like a mirror (Makes it easier to control your hand)
-    frame = cv2.flip(frame, 1)
 
-    # 3. Pass the frame to the AI for prediction
-    # conf=0.5: Only detect when the AI is over 50% confident
-    # verbose=False: Turn off continuous terminal logging to keep it clean
-    results = model.predict(frame, conf=0.5, verbose=False)
-
-    # 4. The AI automatically draws bounding boxes and text on the frame
-    annotated_frame = results[0].plot()
-
-    # 5. Display the Video window on the screen
-    cv2.imshow("SmartSight - Hand Direction Tracker", annotated_frame)
-
-    # 6. Listen for keyboard input, break the loop if 'q' is pressed
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# Clean up the camera and close all windows after exiting
-cap.release()
-cv2.destroyAllWindows()
+if __name__ == "__main__":
+    main()

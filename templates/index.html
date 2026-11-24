@@ -1506,7 +1506,13 @@ function addLog(tag, msg, cls) {
   const line = document.createElement('div');
   line.className = 'log-line';
   const tagClass = cls || logColors[tag] || '';
-  line.innerHTML = `<span class="time">${time}</span><span class="tag ${tagClass}">[${tag}]</span><span class="msg">${msg}</span>`;
+  // Build nodes instead of innerHTML so server-provided text can never inject markup.
+  [['time', time], [`tag ${tagClass}`, `[${tag}]`], ['msg', msg]].forEach(([cls, text]) => {
+    const span = document.createElement('span');
+    span.className = cls;
+    span.textContent = text;
+    line.appendChild(span);
+  });
   log.appendChild(line);
   log.scrollTop = log.scrollHeight;
   while (log.children.length > 80) log.removeChild(log.firstChild);

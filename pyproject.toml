@@ -1,0 +1,17 @@
+[project]
+name = "smartsight"
+version = "2.2.0"
+description = "Gesture-driven Landolt C visual acuity screening with YOLOv8 and OpenCV"
+requires-python = ">=3.9"
+readme = "README.md"
+license = { text = "MIT" }
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
