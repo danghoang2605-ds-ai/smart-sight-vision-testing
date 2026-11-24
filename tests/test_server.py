@@ -40,3 +40,10 @@ def test_start_rejects_bad_input(client):
 def test_toggle_privacy(client):
     assert client.post("/toggle_privacy").get_json()["privacy_mode"] is True
     assert client.post("/toggle_privacy").get_json()["privacy_mode"] is False
+
+
+def test_pause_endpoint(client):
+    client.post("/start", json={"max_attempts": 5})
+    assert client.post("/pause").get_json()["paused"] is True
+    assert client.get("/test_status").get_json()["paused"] is True
+    assert client.post("/pause").get_json()["paused"] is False

@@ -53,10 +53,13 @@ class Telemetry:
     inference_ms: int = 0
     ambient_lux: int = 0
     head_stability_pct: float = 100.0
+    gesture: str | None = None  # last gesture seen by YOLO, for the HUD
+    gesture_conf: float = 0.0
 
     def as_dict(self) -> dict:
         return {"fps": self.fps, "inference_ms": self.inference_ms,
-                "ambient_lux": self.ambient_lux, "head_stability_pct": self.head_stability_pct}
+                "ambient_lux": self.ambient_lux, "head_stability_pct": self.head_stability_pct,
+                "gesture": self.gesture, "gesture_conf": round(self.gesture_conf, 2)}
 
 
 @dataclass
@@ -118,10 +121,12 @@ class VisionEngine:
 
         boxes = results[0].boxes
         if boxes is None or len(boxes) == 0:
+            self.telemetry.gesture, self.telemetry.gesture_conf = None, 0.0
             return None
         best = int(boxes.conf.argmax())
         conf = float(boxes.conf[best])
         direction = normalize_label(self.model.names[int(boxes.cls[best])])
+        self.telemetry.gesture, self.telemetry.gesture_conf = direction, conf
         x1, y1, x2, y2 = map(int, boxes.xyxy[best])
         cv2.rectangle(frame, (x1, y1), (x2, y2), BOX_COLOR, 2)
         cv2.putText(frame, f"{direction or '?'} {conf:.2f}", (x1, max(0, y1 - 10)),

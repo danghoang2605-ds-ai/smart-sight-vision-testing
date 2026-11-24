@@ -64,6 +64,13 @@ class AcuitySession:
         with self._lock:
             self._reset_locked()
 
+    def toggle_pause(self) -> bool:
+        """Freeze the trial clock and scoring; resuming continues the same trial."""
+        with self._lock:
+            if self.is_active and not self.test_finished:
+                self.paused = not self.paused
+            return self.paused
+
     def toggle_privacy(self) -> bool:
         with self._lock:
             self.privacy_mode = not self.privacy_mode
@@ -98,8 +105,8 @@ class AcuitySession:
             if not self.is_active or self.test_finished:
                 return
 
-            if not in_range:
-                # Pause the trial clock while the patient is out of position.
+            if not in_range or self.paused:
+                # Freeze the trial clock while paused or while the patient is out of position.
                 self._trial_start = now - (cfg.trial_seconds - self.time_left)
                 return
 
@@ -131,11 +138,13 @@ class AcuitySession:
                 "hesitation": self.hesitation,
                 "alert": self.alert,
                 "privacy_mode": self.privacy_mode,
+                "paused": self.paused,
             }
 
     # ----- internals (lock held) --------------------------------------------------------------
     def _reset_locked(self) -> None:
         self.is_active = False
+        self.paused = False
         self.test_finished = False
         self.max_attempts = self.cfg.default_attempts
         self.score = 0

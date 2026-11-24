@@ -134,3 +134,20 @@ def test_reset_keeps_privacy(session):
     session.reset()
     snap = session.snapshot()
     assert snap["score"] == 0 and not snap["is_active"] and snap["privacy_mode"]
+
+
+def test_pause_freezes_clock_and_scoring(session, clock):
+    session.start(5)
+    clock.t += 4
+    session.update(seen())
+    assert session.toggle_pause() is True
+    clock.t += 30
+    answer(session, 20)
+    assert session.score == 0 and session.attempts == 0
+    assert session.toggle_pause() is False
+    session.update(seen())
+    assert session.time_left == 11
+
+
+def test_pause_ignored_when_idle(session):
+    assert session.toggle_pause() is False

@@ -18,21 +18,21 @@
   --surface-3: #f1f5f9;
   --ink: #0f172a;
   --ink-2: #1e293b;
-  --muted: #64748b;
+  --muted: #536074;
   --muted-2: #94a3b8;
   --line: #e2e8f0;
   --line-2: #cbd5e1;
 
-  --brand: #0284c7;
-  --brand-2: #0369a1;
+  --brand: #0369a1;
+  --brand-2: #075985;
   --brand-soft: #e0f2fe;
   --brand-ink: #075985;
 
-  --success: #059669;
+  --success: #047857;
   --success-soft: #d1fae5;
   --warning: #d97706;
   --warning-soft: #fef3c7;
-  --danger: #e11d48;
+  --danger: #be123c;
   --danger-soft: #ffe4e6;
 
   --shadow-sm: 0 1px 2px rgba(15,23,42,.04);
@@ -76,14 +76,14 @@ button { font-family: inherit; cursor: pointer; }
 .brand-text h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
 .brand-text small { font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 2px; }
 .version-pill {
-  font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
   padding: 3px 8px; border-radius: 6px;
   background: var(--brand-soft); color: var(--brand-ink);
   text-transform: uppercase;
 }
 
 .crumbs { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
-.crumbs i { font-size: 9px; opacity: .5; }
+.crumbs i { font-size: 11px; opacity: .5; }
 .crumbs .current { color: var(--ink); font-weight: 600; }
 
 .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
@@ -109,7 +109,7 @@ button { font-family: inherit; cursor: pointer; }
   0% { transform: scale(1); opacity: .6; }
   100% { transform: scale(3); opacity: 0; }
 }
-.engine-meta { color: #059669; font-weight: 500; opacity: .8; font-size: 11px; }
+.engine-meta { color: #065f46; font-weight: 500; font-size: 11px; }
 
 .icon-btn {
   width: 36px; height: 36px; border-radius: 10px;
@@ -136,7 +136,7 @@ button { font-family: inherit; cursor: pointer; }
   display: grid; place-items: center;
 }
 .user-chip span { font-size: 12px; font-weight: 600; }
-.user-chip small { font-size: 10px; color: var(--muted); display:block; line-height:1; margin-top:2px;}
+.user-chip small { font-size: 11px; color: var(--muted); display:block; line-height:1; margin-top:2px;}
 
 /* ─── LAYOUT ────────────────────────────────────────────────── */
 .shell {
@@ -262,7 +262,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 .timer-row { display: flex; align-items: center; justify-content: space-between; }
 .timer-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
   text-transform: uppercase; color: #7dd3fc;
 }
 .timer-progress {
@@ -291,7 +291,7 @@ button { font-family: inherit; cursor: pointer; }
   border-top: 1px solid rgba(255,255,255,.08);
   font-size: 12px;
 }
-.timer-meta .lbl { color: #94a3b8; }
+.timer-meta .lbl { color: #bae6fd; }
 .timer-meta .val { color: white; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* ─── COGNITIVE METRICS ─────────────────────────────────────── */
@@ -499,7 +499,7 @@ button { font-family: inherit; cursor: pointer; }
   top: -26px; left: -2px;
   background: #22d3ee;
   color: #0c4a6e;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   font-family: 'JetBrains Mono', monospace;
   padding: 2px 6px;
@@ -527,7 +527,6 @@ button { font-family: inherit; cursor: pointer; }
   top: 0; left: 0; right: 0;
   height: 2px;
   background: linear-gradient(90deg, transparent, #22d3ee, transparent);
-  box-shadow: 0 0 12px #22d3ee;
   animation: scan 3.5s ease-in-out infinite;
   z-index: 5;
 }
@@ -590,7 +589,7 @@ button { font-family: inherit; cursor: pointer; }
   min-width: 200px;
 }
 .distance-hud .hud-label {
-  font-size: 10px; color: rgba(255,255,255,.5);
+  font-size: 11px; color: rgba(255,255,255,.75);
   letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700;
 }
 .distance-hud .hud-val {
@@ -623,7 +622,7 @@ button { font-family: inherit; cursor: pointer; }
   display: flex; justify-content: space-between;
   margin-top: 4px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; color: rgba(255,255,255,.4);
+  font-size: 11px; color: rgba(255,255,255,.7);
 }
 
 /* ─── Cognitive Metrics ──────────────────── */
@@ -648,12 +647,11 @@ button { font-family: inherit; cursor: pointer; }
   font-family: 'JetBrains Mono', monospace;
   display: flex; align-items: center; gap: 8px;
 }
-.bottom-hud .stat .k { color: rgba(255,255,255,.5); }
+.bottom-hud .stat .k { color: rgba(255,255,255,.75); }
 .bottom-hud .stat .v { color: white; font-weight: 700; }
 .bottom-hud .pip {
   width: 6px; height: 6px; border-radius: 50%;
   background: #22d3ee;
-  box-shadow: 0 0 6px #22d3ee;
 }
 
 /* Setup Overlay Modal */
@@ -818,7 +816,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 .kpi .kpi-head {
   display: flex; align-items: center; gap: 6px;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
   text-transform: uppercase; color: var(--muted);
 }
 .kpi.feat .kpi-head { color: var(--brand-ink); }
@@ -865,7 +863,7 @@ button { font-family: inherit; cursor: pointer; }
 .chart-corner {
   position: absolute;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 11px;
   color: var(--brand);
   font-weight: 700;
   opacity: .6;
@@ -959,14 +957,13 @@ button { font-family: inherit; cursor: pointer; }
 .terminal-head .meta {
   margin-left: auto;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: #64748b;
+  font-size: 11px;
+  color: #94a3b8;
   display: flex; align-items: center; gap: 6px;
 }
 .terminal-head .live-pip {
   width: 6px; height: 6px; border-radius: 50%;
   background: #10b981;
-  box-shadow: 0 0 4px #10b981;
 }
 .terminal-body {
   height: 160px;
@@ -980,7 +977,7 @@ button { font-family: inherit; cursor: pointer; }
 .terminal-body::-webkit-scrollbar-track { background: transparent; }
 .terminal-body::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
 .log-line { display: flex; gap: 10px; }
-.log-line .time { color: #475569; flex-shrink: 0; }
+.log-line .time { color: #8b9ab0; flex-shrink: 0; }
 .log-line .tag {
   color: #0ea5e9;
   font-weight: 600;
@@ -1000,11 +997,27 @@ button { font-family: inherit; cursor: pointer; }
   height: 3px;
   background: linear-gradient(90deg, #0ea5e9, #22d3ee);
   transition: width .3s;
-  box-shadow: 0 0 12px rgba(34,211,238,.5);
 }
 
 @media (max-width: 1400px) {
   .shell { grid-template-columns: 300px 1fr 340px; }
+}
+/* Tablet: camera on top at full width, side panels below in two columns. */
+@media (max-width: 1180px) {
+  .shell { grid-template-columns: 1fr 1fr; }
+  .shell > section.col { grid-column: 1 / -1; order: -1; }
+  .crumbs { display: none; }
+}
+/* Phone: one column, compact top bar. */
+@media (max-width: 720px) {
+  .shell { grid-template-columns: minmax(0, 1fr); padding: 12px; gap: 12px; }
+  .topbar { flex-wrap: wrap; gap: 8px; padding-left: 12px; padding-right: 12px; }
+  .engine-badge, .user-chip > div:not(.user-avatar), .brand-text small, .version-pill { display: none; }
+  .attempt-grid, .kpi-grid { grid-template-columns: minmax(0, 1fr); }
+  .bottom-hud { flex-wrap: wrap; row-gap: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
 </style>
 </head>
@@ -1026,7 +1039,7 @@ button { font-family: inherit; cursor: pointer; }
     <i class="fa-solid fa-chevron-right"></i>
     <span>Sessions</span>
     <i class="fa-solid fa-chevron-right"></i>
-    <span class="current">SS-2026-0142</span>
+    <span class="current session-id">—</span>
   </div>
 
   <div class="nav-right">
@@ -1035,11 +1048,11 @@ button { font-family: inherit; cursor: pointer; }
       Neural Engine Active
       <span class="engine-meta mono">· YOLOv8 · <span id="engine-fps">31.2</span>fps</span>
     </div>
-    <button class="icon-btn" style="position:relative" title="Alerts">
+    <button class="icon-btn" style="position:relative" title="Alerts" aria-label="Alerts">
       <i class="fa-regular fa-bell"></i>
       <span class="dot"></span>
     </button>
-    <button class="icon-btn" title="Settings"><i class="fa-solid fa-gear"></i></button>
+    <button class="icon-btn" title="Settings" aria-label="Settings"><i class="fa-solid fa-gear"></i></button>
     <div class="user-chip">
       <div class="user-avatar">DR</div>
       <div>
@@ -1063,7 +1076,7 @@ button { font-family: inherit; cursor: pointer; }
         <span class="title">Patient Session</span>
         <div class="spacer"></div>
         <div class="head-right">
-          <span class="mono" style="font-size:10px; color:var(--muted);">LIVE</span>
+          <span class="mono" style="font-size: 11px; color:var(--muted);">LIVE</span>
         </div>
       </div>
       <div class="card-body">
@@ -1082,7 +1095,7 @@ button { font-family: inherit; cursor: pointer; }
 
           <div class="meta-row">
             <span class="label">Session ID</span>
-            <span class="value mono">SS-2026-0142</span>
+            <span class="value mono session-id">—</span>
           </div>
           <div class="meta-row">
             <span class="label">Method</span>
@@ -1097,7 +1110,7 @@ button { font-family: inherit; cursor: pointer; }
           </div>
           <div class="meta-row">
             <span class="label">Started</span>
-            <span class="value mono">14:32:08</span>
+            <span class="value mono" id="session-started">Not started</span>
           </div>
         </div>
       </div>
@@ -1117,7 +1130,7 @@ button { font-family: inherit; cursor: pointer; }
           <button class="btn btn-outline" id="privacy-btn" onclick="togglePrivacy()">
             <i class="fa-solid fa-user-secret"></i> Enable Privacy Mode
           </button>
-          <button class="btn btn-ghost" onclick="addLog('CMD','Session paused by clinician.', 'warn')">
+          <button class="btn btn-ghost" id="pause-btn" onclick="togglePause()">
             <i class="fa-solid fa-pause"></i> Pause Session
           </button>
           <button class="btn btn-danger" onclick="resetSession()">
@@ -1204,18 +1217,15 @@ button { font-family: inherit; cursor: pointer; }
           LIVE
         </div>
         <div class="stream-meta">
-          <span>1080p</span>
+          <span>MJPEG</span>
           <span class="pipe">|</span>
-          <span>WebRTC</span>
+          <span id="stream-fps">0 fps</span>
           <span class="pipe">|</span>
-          <span id="stream-time">14:32:48</span>
+          <span id="stream-time">--:--:--</span>
         </div>
         <div class="stream-tools">
-          <button class="tool-btn on" title="Face tracking"><i class="fa-solid fa-vector-square"></i></button>
-          <button class="tool-btn on" title="Landmarks"><i class="fa-solid fa-braille"></i></button>
-          <button class="tool-btn" title="Heatmap"><i class="fa-solid fa-fire"></i></button>
-          <button class="tool-btn" title="Snapshot"><i class="fa-solid fa-camera"></i></button>
-          <button class="tool-btn" title="Fullscreen"><i class="fa-solid fa-expand"></i></button>
+          <button class="tool-btn" title="Save snapshot" aria-label="Save snapshot" onclick="saveSnapshot()"><i class="fa-solid fa-camera"></i></button>
+          <button class="tool-btn" title="Fullscreen" aria-label="Fullscreen" onclick="toggleFullscreen()"><i class="fa-solid fa-expand"></i></button>
         </div>
       </div>
 
@@ -1271,11 +1281,10 @@ button { font-family: inherit; cursor: pointer; }
       <!-- Bottom HUD -->
       <div class="bottom-hud">
         <div class="stat"><span class="pip"></span> <span class="k">Status</span> <span class="v mono" id="hud-status">TRACKING ACTIVE</span></div>
-        <div class="stat"><span class="k">FPS</span> <span class="v mono"><span id="hud-fps">31.2</span></span></div>
-        <div class="stat"><span class="k">Inference</span> <span class="v mono"><span id="hud-inference">12</span> ms</span></div>
-        <div class="stat"><span class="k">Confidence</span> <span class="v mono">98.4%</span></div>
-        <div class="stat" style="margin-left:auto"><span class="k">GPU</span> <span class="v mono">RTX A4000 · 42°C</span></div>
-        <div class="session-progress" id="session-progress" style="width:20%"></div>
+        <div class="stat"><span class="k">FPS</span> <span class="v mono"><span id="hud-fps">0.0</span></span></div>
+        <div class="stat"><span class="k">Inference</span> <span class="v mono"><span id="hud-inference">0</span> ms</span></div>
+        <div class="stat" style="margin-left:auto"><span class="k">Gesture</span> <span class="v mono" id="hud-gesture">—</span></div>
+        <div class="session-progress" id="session-progress" style="width:0%"></div>
       </div>
 
       <!-- Setup Overlay -->
@@ -1317,15 +1326,15 @@ button { font-family: inherit; cursor: pointer; }
             <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <i class="fa-solid fa-circle-check" style="color:var(--success)"></i>
-                Camera permissions granted
+                <span id="check-camera">Camera stream connecting</span>
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
                 <i class="fa-solid fa-circle-check" style="color:var(--success)"></i>
-                Face detected with 98.2% confidence
+                <span id="check-face">Waiting for face detection</span>
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
                 <i class="fa-solid fa-circle-check" style="color:var(--success)"></i>
-                Ambient lighting sufficient (312 lux)
+                <span id="check-light">Measuring ambient light</span>
               </div>
             </div>
           </div>
@@ -1391,24 +1400,24 @@ button { font-family: inherit; cursor: pointer; }
         <div class="ico"><i class="fa-solid fa-file-waveform"></i></div>
         <span class="title">Clinical Output</span>
         <div class="spacer"></div>
-        <span class="mono" style="font-size:10px; color:var(--success);">● RECORDING</span>
+        <span class="mono" style="font-size: 11px; color:var(--success);">● RECORDING</span>
       </div>
       <div class="card-body">
         <div class="kpi-grid">
           <div class="kpi">
             <div class="kpi-head"><i class="fa-solid fa-ruler"></i> Distance</div>
             <div class="kpi-val"><span id="kpi-dist">60</span> <span class="u">cm</span></div>
-            <div class="kpi-sub flat"><i class="fa-solid fa-circle-check"></i> Within range</div>
+            <div class="kpi-sub flat"><i class="fa-solid fa-circle-check"></i> <span id="kpi-dist-state">Within range</span></div>
           </div>
           <div class="kpi">
             <div class="kpi-head"><i class="fa-solid fa-star"></i> Score</div>
-            <div class="kpi-val"><span id="kpi-score">3</span> <span class="u">/ 15</span></div>
-            <div class="kpi-sub up"><i class="fa-solid fa-arrow-trend-up"></i> 80% accuracy</div>
+            <div class="kpi-val"><span id="kpi-score">0</span> <span class="u">/ <span id="kpi-attempts">0</span></span></div>
+            <div class="kpi-sub up"><i class="fa-solid fa-arrow-trend-up"></i> <span id="kpi-accuracy">No trials yet</span></div>
           </div>
           <div class="kpi feat full">
             <div class="kpi-head"><i class="fa-solid fa-eye"></i> Visual Acuity · Snellen</div>
             <div class="kpi-val">20 <span class="u">/</span> <span id="kpi-acuity">30</span></div>
-            <div class="kpi-sub up"><i class="fa-solid fa-circle-info"></i> Live estimate · Confidence 92%</div>
+            <div class="kpi-sub up"><i class="fa-solid fa-circle-info"></i> Live estimate from correct responses</div>
           </div>
         </div>
       </div>
@@ -1420,7 +1429,7 @@ button { font-family: inherit; cursor: pointer; }
         <div class="ico"><i class="fa-solid fa-bullseye"></i></div>
         <span class="title">Vision Chart · Landolt C</span>
         <div class="spacer"></div>
-        <span class="mono" style="font-size:10px; color:var(--muted);" id="chart-size">Size · 8.5'</span>
+        <span class="mono" style="font-size: 11px; color:var(--muted);" id="chart-size">Size · 8.5'</span>
       </div>
       <div class="card-body">
         <div class="chart-panel">
@@ -1456,14 +1465,6 @@ button { font-family: inherit; cursor: pointer; }
         </div>
       </div>
       <div class="terminal-body" id="console-log">
-        <div class="log-line"><span class="time">14:32:08</span><span class="tag sys">[SYS]</span><span class="msg">Booting SmartSight pipeline · v2.1.4</span></div>
-        <div class="log-line"><span class="time">14:32:09</span><span class="tag sys">[SYS]</span><span class="msg">Loading YOLOv8 weights · 248MB</span></div>
-        <div class="log-line"><span class="time">14:32:11</span><span class="tag ok">[OK]</span><span class="msg">CUDA device 0 acquired · RTX A4000</span></div>
-        <div class="log-line"><span class="time">14:32:12</span><span class="tag ok">[OK]</span><span class="msg">WebRTC stream established · 1080p@31fps</span></div>
-        <div class="log-line"><span class="time">14:32:14</span><span class="tag">[DET]</span><span class="msg">Face detected · conf 0.982</span></div>
-        <div class="log-line"><span class="time">14:32:16</span><span class="tag">[DET]</span><span class="msg">68 facial landmarks locked</span></div>
-        <div class="log-line"><span class="time">14:32:18</span><span class="tag ok">[CAL]</span><span class="msg">Pupillary distance · 63.2mm</span></div>
-        <div class="log-line"><span class="time">14:32:21</span><span class="tag">[TGT]</span><span class="msg">New target → opening RIGHT @ 20/30</span></div>
       </div>
     </div>
 
@@ -1534,6 +1535,7 @@ async function beginAssessment() {
   hideSetup();
   ui.finishedAt = null;
   addLog('CMD', `Assessment started · ${ui.selectedAttempts} trials configured`, '');
+  startSessionMeta();
   try {
     await fetch('/start', {
       method: 'POST',
@@ -1595,6 +1597,51 @@ function applyPrivacy(on) {
   }
 }
 
+function saveSnapshot() {
+  const img = $('video-stream');
+  if (!img || !img.naturalWidth) { addLog('WARN', 'No video frame to save yet', 'warn'); return; }
+  const c = document.createElement('canvas');
+  c.width = img.naturalWidth; c.height = img.naturalHeight;
+  c.getContext('2d').drawImage(img, 0, 0);
+  const a = document.createElement('a');
+  a.download = `smartsight-${new Date().toISOString().replace(/[:.]/g, '-')}.jpg`;
+  a.href = c.toDataURL('image/jpeg', 0.9);
+  a.click();
+  addLog('CMD', 'Snapshot saved', '');
+}
+
+function toggleFullscreen() {
+  const feed = document.querySelector('.video-feed');
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (feed && feed.requestFullscreen) feed.requestFullscreen();
+}
+
+function startSessionMeta() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const id = `SS-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+  document.querySelectorAll('.session-id').forEach(el => { el.textContent = id; });
+  $('session-started').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+}
+
+async function togglePause() {
+  try {
+    const res = await fetch('/pause', { method: 'POST' });
+    const data = await res.json();
+    applyPause(!!data.paused);
+    addLog('CMD', data.paused ? 'Session paused by clinician' : 'Session resumed', data.paused ? 'warn' : '');
+  } catch (_) {
+    addLog('ERR', 'Pause unavailable · backend offline', 'err');
+  }
+}
+
+function applyPause(on) {
+  const btn = $('pause-btn');
+  if (!btn || btn.dataset.paused === String(on)) return;
+  btn.dataset.paused = String(on);
+  btn.innerHTML = on ? '<i class="fa-solid fa-play"></i> Resume Session' : '<i class="fa-solid fa-pause"></i> Pause Session';
+}
+
 async function resetSession() {
   hideResult();
   showSetup();
@@ -1626,6 +1673,18 @@ function applyStatus(d) {
 
   // ── Score & Acuity ──
   $('kpi-score').textContent = d.score ?? 0;
+  const att = d.attempts ?? 0;
+  $('kpi-attempts').textContent = att;
+  $('kpi-accuracy').textContent = att ? `${Math.round(100 * (d.score ?? 0) / att)}% correct` : 'No trials yet';
+  $('kpi-dist-state').textContent = dist < 50 ? 'Too close' : dist > 70 ? 'Too far' : 'Within range';
+  const streaming = !ui.useFallback && (d.fps ?? 0) > 0;
+  const faceOk = streaming && d.alert !== 'ANTI-CHEAT: FACE NOT DETECTED';
+  $('stream-fps').textContent = `${(d.fps ?? 0).toFixed(0)} fps`;
+  $('check-camera').textContent = ui.useFallback ? 'Backend offline · simulator data'
+    : streaming ? `Camera streaming · ${(d.fps ?? 0).toFixed(0)} fps` : 'Waiting for camera';
+  $('check-face').textContent = faceOk ? `Face tracked at ${dist} cm` : 'Face not detected yet';
+  $('check-light').textContent = `Ambient light ~${Math.round(d.ambient_lux ?? 0)} lux${(d.ambient_lux ?? 0) < 150 ? ' · too dim' : ''}`;
+  applyPause(!!d.paused);
   const acuityStr = d.vision_level || '20/—';
   const acuityNum = (acuityStr.split('/')[1] || '—');
   $('kpi-acuity').textContent = acuityNum;
@@ -1677,6 +1736,7 @@ function applyStatus(d) {
   $('hud-fps').textContent = fps;
   $('engine-fps').textContent = fps;
   $('hud-inference').textContent = Math.round(d.inference_ms ?? 0);
+  $('hud-gesture').textContent = d.gesture ? `${d.gesture} · ${(d.gesture_conf ?? 0).toFixed(2)}` : '—';
   $('stream-time').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
 
   // ── Status / Alert banner ──

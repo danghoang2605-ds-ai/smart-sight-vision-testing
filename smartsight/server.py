@@ -61,6 +61,10 @@ def create_app(cfg: Settings = default_settings, session: AcuitySession | None =
         session.reset()
         return jsonify({"status": "reset"})
 
+    @app.post("/pause")
+    def toggle_pause():
+        return jsonify({"paused": session.toggle_pause()})
+
     @app.post("/toggle_privacy")
     def toggle_privacy():
         return jsonify({"privacy_mode": session.toggle_privacy()})
@@ -69,7 +73,8 @@ def create_app(cfg: Settings = default_settings, session: AcuitySession | None =
     def test_status():
         payload = session.snapshot()
         payload.update(worker.engine.telemetry.as_dict() if worker is not None else
-                       {"fps": 0.0, "inference_ms": 0, "ambient_lux": 0, "head_stability_pct": 100.0})
+                       {"fps": 0.0, "inference_ms": 0, "ambient_lux": 0, "head_stability_pct": 100.0,
+                        "gesture": None, "gesture_conf": 0.0})
         return jsonify(payload)
 
     @app.get("/health")
