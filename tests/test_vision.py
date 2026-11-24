@@ -36,3 +36,30 @@ def test_blur_region_clips_to_frame():
 
 def test_placeholder_is_jpeg():
     assert placeholder_jpeg("hello")[:2] == b"\xff\xd8"
+
+
+def test_focal_round_trip(tmp_path):
+    from smartsight.vision import focal_from_measurement, load_focal
+
+    cfg = Settings(calibration_path=tmp_path / "cal.json")
+    focal = focal_from_measurement(200, 50, cfg)
+    assert estimate_distance_cm(200, cfg, focal) == pytest.approx(50)
+    assert load_focal(cfg) == cfg.focal_length_px  # no file yet
+    (tmp_path / "cal.json").write_text('{"focal_length_px": 812.5}')
+    assert load_focal(cfg) == 812.5
+    (tmp_path / "cal.json").write_text("garbage")
+    assert load_focal(cfg) == cfg.focal_length_px
+
+
+def test_engine_calibrate_needs_a_face(tmp_path):
+    from smartsight.vision import VisionEngine
+
+    cfg = Settings(calibration_path=tmp_path / "cal.json")
+    engine = VisionEngine(cfg, model=None)
+    with pytest.raises(LookupError):
+        engine.calibrate(60)
+    engine._smoothed_width = 150.0
+    engine._last_face_ts = __import__("time").perf_counter()
+    focal = engine.calibrate(60)
+    assert focal == pytest.approx(150 * 60 / cfg.known_face_width_cm, abs=0.1)
+    assert (tmp_path / "cal.json").exists()

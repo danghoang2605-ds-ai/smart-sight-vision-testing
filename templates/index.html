@@ -691,7 +691,26 @@ button { font-family: inherit; cursor: pointer; }
 .modal-head h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
 .modal-head p { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
-.modal-body { padding: 22px 24px; }
+.modal-body { padding: 22px 24px; overflow-y: auto; }
+#setup-overlay .modal { max-height: calc(100% - 32px); display: flex; flex-direction: column; }
+#setup-overlay .modal-head, #setup-overlay .modal-foot { flex-shrink: 0; }
+.cal-block { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; }
+.cal-block p { font-size: 12px; color: var(--muted); margin: 0 0 10px; line-height: 1.45; }
+.card-outline {
+  height: 0; padding-bottom: 0; border: 2px solid var(--brand); border-radius: 8px;
+  background: var(--brand-soft); margin: 4px 0 10px; transition: width .05s linear;
+}
+.cal-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.cal-row input[type=range] { flex: 1; accent-color: var(--brand); }
+.cal-row input[type=number] {
+  width: 72px; padding: 7px 8px; border: 1px solid var(--line-2); border-radius: 8px;
+  font: inherit; font-variant-numeric: tabular-nums;
+}
+.cal-row .btn { width: auto; padding: 8px 12px; }
+.cal-status { font-size: 12px; margin-top: 8px; color: var(--muted); min-height: 1.2em; }
+.cal-status.ok { color: var(--success); }
+.cal-status.err { color: var(--danger); }
+#landolt-c { display: block; color: #0f172a; transition: transform .35s cubic-bezier(.2,.8,.2,1), width .3s ease, height .3s ease; }
 .section-label {
   font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--muted);
@@ -1302,8 +1321,28 @@ button { font-family: inherit; cursor: pointer; }
               <div class="icn"><i class="fa-solid fa-arrows-left-right"></i></div>
               <div class="info">
                 <div class="ttl">50 – 70 cm from camera</div>
-                <div class="sub">Current: <strong id="setup-current-dist">60 cm</strong> · Within range ✓</div>
+                <div class="sub">Current: <strong id="setup-current-dist">60 cm</strong> · <span id="setup-dist-state">Within range</span></div>
               </div>
+            </div>
+
+            <div class="section-label">Screen size</div>
+            <div class="cal-block">
+              <p>Hold a bank card flat against the screen and drag until the blue outline matches its width. This sets the true size of the optotype.</p>
+              <div class="card-outline" id="card-outline"></div>
+              <div class="cal-row">
+                <input type="range" id="card-slider" min="160" max="700" step="1" aria-label="Card width on screen" oninput="setCardWidth(+this.value)">
+                <span class="mono" id="ppmm-label">3.78 px/mm</span>
+              </div>
+            </div>
+
+            <div class="section-label">Camera distance</div>
+            <div class="cal-block">
+              <p>Sit at a distance you measured with a tape (eyes to camera), enter it, then calibrate. Saved for this webcam.</p>
+              <div class="cal-row">
+                <input type="number" id="cal-distance" min="20" max="200" value="60" aria-label="Measured distance in centimetres"> cm
+                <button class="btn btn-outline" type="button" onclick="calibrateDistance()">Calibrate camera</button>
+              </div>
+              <div class="cal-status" id="cal-status" role="status"></div>
             </div>
 
             <div class="section-label">Number of Trials</div>
@@ -1354,28 +1393,28 @@ button { font-family: inherit; cursor: pointer; }
             <div class="result-card">
               <div class="result-glyph"><i class="fa-solid fa-check"></i></div>
               <div class="section-label" style="margin:0">Snellen Acuity</div>
-              <div class="result-acuity">20<span class="slash">/</span>25</div>
-              <div class="result-grade">
+              <div class="result-acuity">20<span class="slash">/</span>—</div>
+              <div class="result-grade" id="result-grade">
                 <i class="fa-solid fa-circle-check"></i>
-                Within normal range · Reliable result
+                <span id="result-grade-text">—</span>
               </div>
 
               <div class="result-meta-grid">
                 <div class="cell">
                   <div class="k">Score</div>
-                  <div class="v">13 / 15</div>
+                  <div class="v">0 / 0</div>
                 </div>
                 <div class="cell">
                   <div class="k">Avg Response</div>
-                  <div class="v">1.4 s</div>
+                  <div class="v">0.0 s</div>
                 </div>
                 <div class="cell">
                   <div class="k">Hesitations</div>
-                  <div class="v">2</div>
+                  <div class="v">0</div>
                 </div>
                 <div class="cell">
                   <div class="k">Duration</div>
-                  <div class="v">3:42</div>
+                  <div class="v">0:00</div>
                 </div>
               </div>
             </div>
@@ -1417,7 +1456,7 @@ button { font-family: inherit; cursor: pointer; }
           <div class="kpi feat full">
             <div class="kpi-head"><i class="fa-solid fa-eye"></i> Visual Acuity · Snellen</div>
             <div class="kpi-val">20 <span class="u">/</span> <span id="kpi-acuity">30</span></div>
-            <div class="kpi-sub up"><i class="fa-solid fa-circle-info"></i> Live estimate from correct responses</div>
+            <div class="kpi-sub up"><i class="fa-solid fa-circle-info"></i> Smallest line passed so far</div>
           </div>
         </div>
       </div>
@@ -1427,9 +1466,9 @@ button { font-family: inherit; cursor: pointer; }
     <div class="card">
       <div class="card-head">
         <div class="ico"><i class="fa-solid fa-bullseye"></i></div>
-        <span class="title">Vision Chart · Landolt C</span>
+        <span class="title">Landolt C Chart</span>
         <div class="spacer"></div>
-        <span class="mono" style="font-size: 11px; color:var(--muted);" id="chart-size">Size · 8.5'</span>
+        <span class="mono" style="font-size: 11px; color:var(--muted); white-space:nowrap;" id="chart-size">Line —</span>
       </div>
       <div class="card-body">
         <div class="chart-panel">
@@ -1437,19 +1476,22 @@ button { font-family: inherit; cursor: pointer; }
           <span class="chart-corner tr">+</span>
           <span class="chart-corner bl">+</span>
           <span class="chart-corner br">+</span>
-          <div id="landolt-c" class="direction-RIGHT">C</div>
+          <svg id="landolt-c" class="direction-RIGHT" viewBox="-2.5 -2.5 5 5" width="120" height="120" role="img" aria-label="Landolt C optotype">
+            <defs><mask id="landolt-gap"><rect x="-2.5" y="-2.5" width="5" height="5" fill="#fff"/><rect x="0" y="-0.5" width="2.5" height="1" fill="#000"/></mask></defs>
+            <circle r="2" fill="none" stroke="currentColor" stroke-width="1" mask="url(#landolt-gap)"/>
+          </svg>
         </div>
 
         <div class="direction-pills">
           <div class="pill" data-dir="UP"><i class="fa-solid fa-arrow-up"></i> Up</div>
           <div class="pill" data-dir="DOWN"><i class="fa-solid fa-arrow-down"></i> Down</div>
           <div class="pill" data-dir="LEFT"><i class="fa-solid fa-arrow-left"></i> Left</div>
-          <div class="pill active" data-dir="RIGHT"><i class="fa-solid fa-arrow-right"></i> Right</div>
+          <div class="pill" data-dir="RIGHT"><i class="fa-solid fa-arrow-right"></i> Right</div>
         </div>
 
         <div class="chart-prompt">
           <div class="pico"><i class="fa-solid fa-hand-pointer"></i></div>
-          <div>Patient gestures the direction of the <strong>opening</strong>. Awaiting input…</div>
+          <div>Patient gestures the direction of the <strong>opening</strong>. Two correct answers pass a line; two misses end the test.</div>
         </div>
       </div>
     </div>
@@ -1494,6 +1536,7 @@ const ui = {
   lastAlert: null,
   finishedAt: null,
   useFallback: false,
+  pxPerMm: 96 / 25.4,
   fallbackTick: 0
 };
 
@@ -1597,6 +1640,41 @@ function applyPrivacy(on) {
   }
 }
 
+/* ─── Calibration ─────────────────────── */
+const CARD_MM = 85.6; // ISO/IEC 7810 ID-1 card width
+function loadPxPerMm() {
+  try { const v = parseFloat(localStorage.getItem('smartsight.pxPerMm')); if (v > 1 && v < 20) return v; } catch (_) {}
+  return 96 / 25.4; // CSS reference pixel; real screens differ, hence the card calibration
+}
+function setCardWidth(px) {
+  ui.pxPerMm = px / CARD_MM;
+  const el = $('card-outline');
+  el.style.width = `${px}px`;
+  el.style.paddingBottom = `${px * 53.98 / CARD_MM}px`;
+  $('ppmm-label').textContent = `${ui.pxPerMm.toFixed(2)} px/mm`;
+  try { localStorage.setItem('smartsight.pxPerMm', String(ui.pxPerMm)); } catch (_) {}
+}
+async function calibrateDistance() {
+  const status = $('cal-status');
+  const cm = parseFloat($('cal-distance').value);
+  status.className = 'cal-status';
+  status.textContent = 'Calibrating…';
+  try {
+    const res = await fetch('/calibrate_distance', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ distance_cm: cm })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Calibration failed');
+    status.className = 'cal-status ok';
+    status.textContent = `Calibrated · focal length ${data.focal_length_px} px`;
+    addLog('CAL', `Camera calibrated at ${cm} cm`, 'ok');
+  } catch (e) {
+    status.className = 'cal-status err';
+    status.textContent = e.message === 'Failed to fetch' ? 'Backend offline' : e.message;
+  }
+}
+
 function saveSnapshot() {
   const img = $('video-stream');
   if (!img || !img.naturalWidth) { addLog('WARN', 'No video frame to save yet', 'warn'); return; }
@@ -1668,6 +1746,7 @@ function applyStatus(d) {
   $('kpi-dist').textContent = dist;
   $('hud-dist').textContent = dist;
   $('setup-current-dist').textContent = `${dist} cm`;
+  $('setup-dist-state').textContent = dist < 50 ? 'Move back' : dist > 70 ? 'Move closer' : 'Within range';
   const distPct = Math.max(0, Math.min(100, ((dist - 40) / 50) * 100));
   $('dist-marker').style.left = `${distPct}%`;
 
@@ -1778,25 +1857,26 @@ function applyStatus(d) {
   const direction = (d.target_direction || 'RIGHT').toUpperCase();
   const c = $('landolt-c');
   if (DIRS.includes(direction)) {
-    c.className = 'direction-' + direction;
-    // Size scaled by score (better score → smaller letter) AND distance
-    // 220px reference. Reduce by ~12% per correct response, normalize by 60cm reference.
-    const levelFactor = Math.max(0.18, 1 - ((d.score ?? 0) * 0.10));
-    const distanceFactor = Math.max(0.6, Math.min(1.4, (dist || 60) / 60.0));
-    c.style.fontSize = `${220 * levelFactor * distanceFactor}px`;
+    c.setAttribute('class', 'direction-' + direction);
+    // True size: the gap subtends 1 arcmin × (Snellen denominator / 20) at the measured distance,
+    // and the ring is 5 gaps wide. Converted to CSS px with the screen calibration.
+    const line = d.level_snellen || '20/200';
+    const denom = parseInt(line.split('/')[1], 10) || 200;
+    const gapMm = (dist || 60) * 10 * Math.tan(Math.PI / 10800) * denom / 20;
+    const sizePx = Math.max(4, 5 * gapMm * ui.pxPerMm);
+    c.setAttribute('width', sizePx.toFixed(1));
+    c.setAttribute('height', sizePx.toFixed(1));
+    $('chart-size').textContent = `${line} · ${(5 * gapMm).toFixed(1)} mm`;
 
-    document.querySelectorAll('.direction-pills .pill').forEach(p => {
-      p.classList.toggle('active', p.dataset.dir === direction);
-    });
-
+    // The target is never highlighted or logged: the patient can see this screen.
     if (direction !== ui.lastTarget && ui.lastTarget !== null) {
-      addLog('TGT', `New target → opening ${direction} @ ${acuityStr}`, '');
+      addLog('TGT', `New optotype shown · line ${line}`, '');
     }
     ui.lastTarget = direction;
   }
 
   if (acuityStr !== ui.lastAcuity && ui.lastAcuity !== null && acuityStr !== '20/—') {
-    addLog('DET', `Acuity threshold → ${acuityStr}`, '');
+    addLog('DET', `Line passed → ${acuityStr}`, 'ok');
   }
   ui.lastAcuity = acuityStr;
 
@@ -1812,11 +1892,22 @@ function applyStatus(d) {
     ui.finishedAt = Date.now();
     addLog('OK', `Assessment complete · final ${acuityStr}`, 'ok');
     // Populate result modal
-    document.querySelector('#result-overlay .result-acuity').innerHTML =
-      `${acuityStr.split('/')[0]}<span class="slash">/</span>${acuityStr.split('/')[1] || '—'}`;
+    const passed = !!d.vision_level;
+    document.querySelector('#result-overlay .result-acuity').innerHTML = passed
+      ? `${acuityStr.split('/')[0]}<span class="slash">/</span>${acuityStr.split('/')[1]}`
+      : '&lt;20<span class="slash">/</span>200';
+    const den = passed ? parseInt(acuityStr.split('/')[1], 10) : 999;
+    $('result-grade-text').textContent = den <= 40
+      ? 'Within the usual screening range (20/40 or better)'
+      : passed ? 'Below the 20/40 screening line · refer for a full eye exam'
+               : 'Largest line not read · refer for a full eye exam';
+    $('result-grade').style.color = den <= 40 ? 'var(--success)' : 'var(--danger)';
     const cells = document.querySelectorAll('#result-overlay .result-meta-grid .v');
-    if (cells[0]) cells[0].textContent = `${d.score} / ${d.max_attempts}`;
-    if (cells[1]) cells[1].textContent = `${rt} s`;
+    const secs = d.duration_s ?? 0;
+    if (cells[0]) cells[0].textContent = `${d.score} / ${d.attempts}`;
+    if (cells[1]) cells[1].textContent = `${(d.avg_response_time ?? 0).toFixed(1)} s`;
+    if (cells[2]) cells[2].textContent = `${d.hesitations ?? 0}`;
+    if (cells[3]) cells[3].textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
     setTimeout(() => $('result-overlay').classList.remove('hidden'), 300);
   } else if (!d.test_finished && ui.finishedAt) {
     ui.finishedAt = null;
@@ -1860,7 +1951,11 @@ const fb = {
       attempts: 0,
       time_left: TIMER_MAX,
       distance_cm: 60,
-      vision_level: '20/40',
+      vision_level: null,
+      level_snellen: '20/200',
+      hesitations: 0,
+      avg_response_time: 0,
+      duration_s: 0,
       response_time: 0,
       hesitation: false,
       alert: 'TRACKING ACTIVE',
@@ -1893,16 +1988,19 @@ const fb = {
           s.attempts++;
           s.hesitation = Math.random() > 0.7;
           s.response_time = +(0.8 + Math.random() * 2.2).toFixed(1);
+          // Same chart lines as the backend: two correct answers pass a line.
+          const lines = ['20/200', '20/100', '20/70', '20/50', '20/40', '20/30', '20/25', '20/20'];
+          const passedLines = Math.min(lines.length, Math.floor(s.score / 2));
+          s.vision_level = passedLines ? lines[passedLines - 1] : null;
+          s.level_snellen = lines[Math.min(lines.length - 1, passedLines)];
+          s.avg_response_time = s.response_time;
+          s.hesitations += s.hesitation ? 1 : 0;
           if (s.attempts >= s.max_attempts) {
             s.test_finished = true;
             s.is_active = false;
-            const finalDenom = Math.max(15, 60 - s.score * 3);
-            s.vision_level = `20/${finalDenom}`;
           } else {
             s.target_direction = DIRS[Math.floor(Math.random() * 4)];
             s.time_left = TIMER_MAX;
-            const denoms = [60, 50, 40, 30, 25, 20, 15];
-            s.vision_level = `20/${denoms[Math.min(denoms.length - 1, Math.floor(s.score / 2) + 2)]}`;
           }
         }
       }
@@ -1919,6 +2017,9 @@ const fb = {
 };
 
 // ─── Initial state on load
+ui.pxPerMm = loadPxPerMm();
+setCardWidth(Math.round(ui.pxPerMm * CARD_MM));
+$('card-slider').value = Math.round(ui.pxPerMm * CARD_MM);
 applyStatus(fb.fresh());
 addLog('SYS', 'Dashboard ready · awaiting clinician input', 'sys');
 </script>

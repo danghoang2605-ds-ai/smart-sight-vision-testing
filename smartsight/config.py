@@ -21,6 +21,8 @@ class Settings:
     model_path: Path = field(default_factory=lambda: Path(_env("SMARTSIGHT_MODEL", str(ROOT / "best.pt"))))
     camera_index: int = field(default_factory=lambda: _env("SMARTSIGHT_CAMERA", 0, int))
     host: str = field(default_factory=lambda: _env("SMARTSIGHT_HOST", "127.0.0.1"))
+    calibration_path: Path = field(default_factory=lambda: Path(_env(
+        "SMARTSIGHT_CALIBRATION", str(ROOT / "calibration.json"))))
     port: int = field(default_factory=lambda: _env("SMARTSIGHT_PORT", 5050, int))
 
     # Inference

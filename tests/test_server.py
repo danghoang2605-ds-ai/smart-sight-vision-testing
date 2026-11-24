@@ -47,3 +47,9 @@ def test_pause_endpoint(client):
     assert client.post("/pause").get_json()["paused"] is True
     assert client.get("/test_status").get_json()["paused"] is True
     assert client.post("/pause").get_json()["paused"] is False
+
+
+def test_calibrate_distance_validation(client):
+    assert client.post("/calibrate_distance", json={"distance_cm": "x"}).status_code == 400
+    assert client.post("/calibrate_distance", json={"distance_cm": 5}).status_code == 400
+    assert client.post("/calibrate_distance", json={"distance_cm": 60}).status_code == 409  # camera not started

@@ -65,6 +65,23 @@ def create_app(cfg: Settings = default_settings, session: AcuitySession | None =
     def toggle_pause():
         return jsonify({"paused": session.toggle_pause()})
 
+    @app.post("/calibrate_distance")
+    def calibrate_distance():
+        data = request.get_json(silent=True) or {}
+        try:
+            distance = float(data.get("distance_cm"))
+        except (TypeError, ValueError):
+            return jsonify({"error": "distance_cm must be a number"}), 400
+        if not 20 <= distance <= 200:
+            return jsonify({"error": "distance_cm must be between 20 and 200"}), 400
+        if worker is None:
+            return jsonify({"error": "Camera is not running yet"}), 409
+        try:
+            focal = worker.engine.calibrate(distance)
+        except LookupError as exc:
+            return jsonify({"error": str(exc)}), 409
+        return jsonify({"focal_length_px": focal, "distance_cm": distance})
+
     @app.post("/toggle_privacy")
     def toggle_privacy():
         return jsonify({"privacy_mode": session.toggle_privacy()})

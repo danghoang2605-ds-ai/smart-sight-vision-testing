@@ -14,9 +14,12 @@ Work is grouped into small phases so each one can ship on its own.
 - [x] Dashboard log no longer uses `innerHTML` for server text
 
 ## Phase 1: measurement quality (next)
-- [ ] Per-webcam focal-length calibration screen (hold a card at a known distance)
+- [x] Per-webcam focal-length calibration (tape-measured distance, saved to `calibration.json`)
 - [ ] Replace the Haar cascade with OpenCV's `FaceDetectorYN` or MediaPipe for better distance under side lighting (also removes the OpenCV < 5 pin)
-- [ ] Proper acuity staircase: shrink the optotype only after N correct at a level, stop after M misses, report the last level passed
+- [x] Line-by-line staircase: 2 correct pass a line, 2 misses end the test, result = smallest line passed
+- [x] True-size SVG Landolt C with bank-card screen calibration
+- [x] Pause/resume on the server; result screen shows real averages, hesitations and duration
+- [x] Target direction is no longer highlighted or logged on the patient-facing screen
 - [ ] Separate left-eye / right-eye runs
 
 ## Phase 2: product

@@ -46,7 +46,7 @@ def test_vision_level_is_capped():
     assert vision_level(0) == "20/200"
     assert vision_level(7) == "20/20"
     assert vision_level(99) == "20/20"
-    assert vision_level(-3) == "20/200"
+    assert vision_level(-1) is None
 
 
 def test_start_clamps_attempts(session):
@@ -64,12 +64,63 @@ def test_majority_vote_needs_ten_matching_frames(session):
     assert session.score == 1 and session.attempts == 1
 
 
-def test_wrong_directions_do_not_score(session):
+def wrong_answer(s, n=10):
+    wrong = next(d for d in ("UP", "DOWN", "LEFT", "RIGHT") if d != s.target)
+    for _ in range(n):
+        s.update(seen(wrong))
+
+
+def test_sustained_wrong_direction_is_a_miss(session):
     session.start(5)
-    wrong = next(d for d in ("UP", "DOWN", "LEFT", "RIGHT") if d != session.target)
-    for _ in range(20):
-        session.update(seen(wrong))
-    assert session.score == 0
+    wrong_answer(session)
+    assert session.score == 0 and session.attempts == 1
+
+
+def test_staircase_passes_lines_with_two_correct(session):
+    session.start(20)
+    answer(session)
+    assert session.level == 0 and session.best_level == -1
+    answer(session)
+    assert session.level == 1 and session.best_level == 0
+    assert session.snapshot()["vision_level"] == "20/200"
+    assert session.snapshot()["level_snellen"] == "20/100"
+
+
+def test_two_misses_on_a_line_end_the_test(session):
+    session.start(20)
+    answer(session, 10)
+    answer(session, 10)  # pass 20/200
+    wrong_answer(session)
+    answer(session)
+    assert not session.test_finished
+    wrong_answer(session)
+    snap = session.snapshot()
+    assert snap["test_finished"] and snap["vision_level"] == "20/200"
+
+
+def test_passing_every_line_finishes_at_20_20(session):
+    session.start(50)
+    for _ in range(16):
+        answer(session)
+    snap = session.snapshot()
+    assert snap["test_finished"] and snap["vision_level"] == "20/20" and snap["attempts"] == 16
+
+
+def test_no_line_passed_reports_none(session):
+    session.start(20)
+    wrong_answer(session)
+    wrong_answer(session)
+    snap = session.snapshot()
+    assert snap["test_finished"] and snap["vision_level"] is None
+
+
+def test_target_never_repeats(session):
+    session.start(50)
+    previous = session.target
+    for _ in range(12):
+        answer(session)
+        assert session.target != previous
+        previous = session.target
 
 
 def test_timeout_counts_as_miss(session, clock):
@@ -151,3 +202,18 @@ def test_pause_freezes_clock_and_scoring(session, clock):
 
 def test_pause_ignored_when_idle(session):
     assert session.toggle_pause() is False
+
+
+def test_summary_metrics(session, clock):
+    session.start(3)
+    clock.t += 3
+    answer(session)  # 3 s: hesitation
+    clock.t += 1
+    answer(session)  # 1 s
+    wrong_answer(session)
+    snap = session.snapshot()
+    assert snap["test_finished"]
+    assert snap["hesitations"] == 1
+    assert snap["avg_response_time"] == pytest.approx((3 + 1 + 0) / 3, abs=0.01)
+    clock.t += 100
+    assert session.snapshot()["duration_s"] == 4  # frozen at the moment the test ended

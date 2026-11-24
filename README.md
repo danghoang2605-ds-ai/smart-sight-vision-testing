@@ -15,7 +15,10 @@ A telehealth vision-testing web app that uses **YOLOv8** for real-time hand gest
 | **Anti-Cheat / Gaze Tracking** | Pauses scoring and alerts the clinician if the patient's face disappears for > 1 second. |
 | **HIPAA Privacy Mode** | Live Gaussian-blur face anonymization that can be toggled on/off by the clinician. |
 | **Majority Voting Filter** | Requires a 10/15 frame confidence consensus before scoring to eliminate noise/jitter. |
-| **Snellen Acuity Mapping** | Automatic Score → `20/200` to `20/20` clinical vision level conversion. |
+| **Line-by-line staircase** | Starts on the 20/200 line; two correct answers pass a line, two misses end the test. The result is the smallest line passed (20/200 to 20/20). A sustained wrong gesture counts as a miss instead of waiting for the timeout. |
+| **True-size Landolt C** | Drawn as SVG with standard geometry (gap = stroke = 1/5 of the ring). Its size follows the line, the measured distance and a one-time screen calibration with a bank card, so 20/20 really subtends 5 arcminutes. |
+| **Per-webcam distance calibration** | Sit at a tape-measured distance and press *Calibrate camera*; the focal length is saved to `calibration.json` and reused. |
+| **Pause / resume** | Freezes the trial clock and scoring on the server. |
 
 ---
 
@@ -89,7 +92,8 @@ Open **http://localhost:5050** in Chrome or Edge.
 | `SMARTSIGHT_CAMERA` | `0` | Webcam index |
 | `SMARTSIGHT_MODEL` | `best.pt` | Path to the YOLO weights |
 | `SMARTSIGHT_CONF` | `0.50` | Minimum detection confidence |
-| `SMARTSIGHT_FOCAL` | `600` | Camera focal length in pixels, used for distance; calibrate per webcam |
+| `SMARTSIGHT_FOCAL` | `600` | Default focal length in pixels; replaced by the value from *Calibrate camera* |
+| `SMARTSIGHT_CALIBRATION` | `calibration.json` | Where the camera calibration is saved |
 | `SMARTSIGHT_HOST` / `SMARTSIGHT_PORT` | `127.0.0.1` / `5050` | Bind address |
 
 ## API
@@ -101,6 +105,8 @@ Open **http://localhost:5050** in Chrome or Edge.
 | `POST` | `/start` | `{"max_attempts": 15}` (clamped to 1–50) |
 | `POST` | `/reset` | Ends the session |
 | `POST` | `/toggle_privacy` | `{"privacy_mode": true}` |
+| `POST` | `/pause` | `{"paused": true}` (toggles) |
+| `POST` | `/calibrate_distance` | `{"distance_cm": 60}` → `{"focal_length_px": 812.5}`; 409 if no face is in view |
 | `GET` | `/test_status` | Session state and telemetry |
 | `GET` | `/health` | Liveness |
 

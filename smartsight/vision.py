@@ -1,6 +1,8 @@
 """Per-frame computer vision: face tracking, distance, lighting, privacy blur and gesture detection."""
 from __future__ import annotations
 
+import json
+import logging
 import time
 from collections import deque
 from dataclasses import dataclass, field
@@ -10,14 +12,32 @@ import numpy as np
 
 from .config import DIRECTIONS, Settings
 
+log = logging.getLogger(__name__)
+
 DETECT_SIZE = (320, 240)  # face detection runs on a downsampled frame for speed
 BOX_COLOR = (238, 211, 34)  # BGR, matches the dashboard accent
 
 
-def estimate_distance_cm(face_width_px: float, cfg: Settings) -> float | None:
+def estimate_distance_cm(face_width_px: float, cfg: Settings, focal_px: float | None = None) -> float | None:
     if face_width_px <= 0:
         return None
-    return cfg.known_face_width_cm * cfg.focal_length_px / face_width_px
+    return cfg.known_face_width_cm * (focal_px or cfg.focal_length_px) / face_width_px
+
+
+def focal_from_measurement(face_width_px: float, distance_cm: float, cfg: Settings) -> float:
+    """Invert the pinhole model: the focal length that makes this face width read as distance_cm."""
+    return face_width_px * distance_cm / cfg.known_face_width_cm
+
+
+def load_focal(cfg: Settings) -> float:
+    try:
+        value = float(json.loads(cfg.calibration_path.read_text())["focal_length_px"])
+        if value > 0:
+            log.info("Using calibrated focal length %.1f px from %s", value, cfg.calibration_path)
+            return value
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return cfg.focal_length_px
 
 
 def estimate_lux(gray: np.ndarray) -> int:
@@ -77,9 +97,26 @@ class VisionEngine:
     face_cascade: cv2.CascadeClassifier = field(default_factory=lambda: cv2.CascadeClassifier(
         cv2.data.haarcascades + "haarcascade_frontalface_default.xml"))
     telemetry: Telemetry = field(default_factory=Telemetry)
+    focal_px: float = 0.0  # 0 means "use the configured default"
     _smoothed_width: float | None = None
+    _last_face_ts: float = 0.0
     _head: deque = field(default_factory=lambda: deque(maxlen=15))
     _last_ts: float = field(default_factory=time.perf_counter)
+
+    def __post_init__(self) -> None:
+        if not self.focal_px:
+            self.focal_px = load_focal(self.cfg)
+
+    def calibrate(self, distance_cm: float, max_age_s: float = 1.0) -> float:
+        """Set the focal length from the face currently in view at a tape-measured distance."""
+        if self._smoothed_width is None or time.perf_counter() - self._last_face_ts > max_age_s:
+            raise LookupError("No face in view: sit in front of the camera and try again")
+        self.focal_px = round(focal_from_measurement(self._smoothed_width, distance_cm, self.cfg), 1)
+        try:
+            self.cfg.calibration_path.write_text(json.dumps({"focal_length_px": self.focal_px}))
+        except OSError as exc:  # calibration still applies for this run
+            log.warning("Could not save calibration: %s", exc)
+        return self.focal_px
 
     def tick_fps(self) -> None:
         now = time.perf_counter()
@@ -103,11 +140,12 @@ class VisionEngine:
         x, y, w, h = box
 
         self._smoothed_width = w if self._smoothed_width is None else self._smoothed_width * 0.88 + w * 0.12
+        self._last_face_ts = time.perf_counter()
         self._head.append((x + w // 2, y + h // 2))
         stability = head_stability(self._head, w_img)
         if stability is not None:
             self.telemetry.head_stability_pct = stability
-        return FaceResult(box, estimate_distance_cm(self._smoothed_width, self.cfg))
+        return FaceResult(box, estimate_distance_cm(self._smoothed_width, self.cfg, self.focal_px))
 
     def warmup(self) -> None:
         """The first YOLO call is ~1 s slower (graph setup); pay that before the patient is on screen."""

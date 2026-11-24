@@ -1,5 +1,11 @@
 """Test-session state machine.
 
+Acuity is measured with a simple line-by-line staircase, the way a clinician reads a chart:
+start on the largest line (20/200); two correct answers on a line pass it and move to the
+next, smaller line; two misses on a line end the test. The result is the smallest line passed.
+A miss is either a timeout or a sustained gesture in the wrong direction.
+
+
 Pure Python and thread-safe: the camera thread calls :meth:`AcuitySession.update`
 once per processed frame, while Flask request threads call ``start``/``reset``/
 ``snapshot``. Keeping it free of OpenCV and YOLO makes it fully unit-testable.
@@ -33,8 +39,15 @@ class FrameObservation:
     direction: str | None = None  # gesture detected with enough confidence
 
 
-def vision_level(score: int) -> str:
-    return VISION_LEVELS[max(0, min(score, len(VISION_LEVELS) - 1))]
+PASS_PER_LINE = 2  # correct answers needed to pass a line
+FAIL_PER_LINE = 2  # misses on one line that end the test
+
+
+def vision_level(level: int) -> str | None:
+    """Snellen fraction for a line index, or None when no line was passed."""
+    if level < 0:
+        return None
+    return VISION_LEVELS[min(level, len(VISION_LEVELS) - 1)]
 
 
 class AcuitySession:
@@ -57,6 +70,7 @@ class AcuitySession:
             self._reset_locked()
             self.max_attempts = n
             self.is_active = True
+            self._started_at = self._clock()
             self.alert = TRACKING
             self._next_target_locked()
 
@@ -118,8 +132,10 @@ class AcuitySession:
 
             if obs.direction:
                 self._votes.append(obs.direction)
-            if self._votes.count(self.target) >= cfg.votes_needed:
-                self._finish_trial_locked(correct=True, response_time=elapsed)
+            if self._votes:
+                answer = max(set(self._votes), key=self._votes.count)
+                if self._votes.count(answer) >= cfg.votes_needed:
+                    self._finish_trial_locked(correct=answer == self.target, response_time=elapsed)
 
     # ----- read model -------------------------------------------------------------------------
     def snapshot(self) -> dict:
@@ -133,7 +149,14 @@ class AcuitySession:
                 "attempts": self.attempts,
                 "time_left": self.time_left,
                 "distance_cm": self.distance_cm,
-                "vision_level": vision_level(self.score),
+                "vision_level": vision_level(self.best_level),
+                "level": self.level,
+                "level_snellen": VISION_LEVELS[self.level],
+                "best_level": self.best_level,
+                "hesitations": self.hesitations,
+                "avg_response_time": round(sum(self._response_times) / len(self._response_times), 2)
+                if self._response_times else 0.0,
+                "duration_s": self._duration_locked(),
                 "response_time": self.last_response_time,
                 "hesitation": self.hesitation,
                 "alert": self.alert,
@@ -149,6 +172,14 @@ class AcuitySession:
         self.max_attempts = self.cfg.default_attempts
         self.score = 0
         self.attempts = 0
+        self.hesitations = 0
+        self._response_times: list[float] = []
+        self._started_at: float | None = None
+        self._finished_at: float | None = None
+        self.level = 0  # line currently shown (0 = 20/200)
+        self.best_level = -1  # smallest line passed so far
+        self._line_correct = 0
+        self._line_missed = 0
         self.time_left = self.cfg.trial_seconds
         self.last_response_time = 0.0
         self.hesitation = False
@@ -158,20 +189,46 @@ class AcuitySession:
         self._missing_frames = 0
         self._votes.clear()
 
+    def _duration_locked(self) -> int:
+        if self._started_at is None:
+            return 0
+        end = self._finished_at if self._finished_at is not None else self._clock()
+        return int(end - self._started_at)
+
     def _next_target_locked(self) -> None:
-        self.target = self._rng.choice(DIRECTIONS)
+        # Never repeat the previous direction: a hand still held up would score instantly.
+        self.target = self._rng.choice([d for d in DIRECTIONS if d != self.target])
         self._trial_start = self._clock()
         self.time_left = self.cfg.trial_seconds
         self._votes.clear()
 
     def _finish_trial_locked(self, correct: bool, response_time: float | None) -> None:
         self.attempts += 1
+        if response_time is not None:
+            self.last_response_time = round(response_time, 2)
+            self.hesitation = self.last_response_time > self.cfg.hesitation_seconds
+            self.hesitations += int(self.hesitation)
+            self._response_times.append(response_time)
+        line_ended = False
         if correct:
             self.score += 1
-            self.last_response_time = round(response_time or 0.0, 2)
-            self.hesitation = self.last_response_time > self.cfg.hesitation_seconds
-        if self.attempts >= self.max_attempts:
+            self._line_correct += 1
+            if self._line_correct >= PASS_PER_LINE:
+                self.best_level = self.level
+                line_ended = True
+        else:
+            self._line_missed += 1
+            if self._line_missed >= FAIL_PER_LINE:
+                self.test_finished = True
+        if line_ended:
+            self._line_correct = self._line_missed = 0
+            if self.level == len(VISION_LEVELS) - 1:
+                self.test_finished = True  # passed the smallest line on the chart
+            else:
+                self.level += 1
+        if self.test_finished or self.attempts >= self.max_attempts:
             self.test_finished = True
+            self._finished_at = self._clock()
             self.alert = COMPLETE
         else:
             self._next_target_locked()
