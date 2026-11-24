@@ -65,7 +65,8 @@ def test_majority_vote_needs_ten_matching_frames(session):
 
 
 def wrong_answer(s, n=10):
-    wrong = next(d for d in ("UP", "DOWN", "LEFT", "RIGHT") if d != s.target)
+    # A fresh wrong direction: neither the target nor the hand still up from the last trial.
+    wrong = next(d for d in ("UP", "DOWN", "LEFT", "RIGHT") if d not in (s.target, s._carryover))
     for _ in range(n):
         s.update(seen(wrong))
 
@@ -217,3 +218,25 @@ def test_summary_metrics(session, clock):
     assert snap["avg_response_time"] == pytest.approx((3 + 1 + 0) / 3, abs=0.01)
     clock.t += 100
     assert session.snapshot()["duration_s"] == 4  # frozen at the moment the test ended
+
+
+def test_hand_still_up_from_last_answer_is_not_a_miss(session):
+    session.start(20)
+    previous = session.target
+    answer(session)  # correct; a new, different target appears
+    for _ in range(30):  # the patient keeps holding the previous direction
+        session.update(seen(previous))
+    assert session.attempts == 1 and session.score == 1
+    session.update(seen(None))  # hand lowered
+    answer(session)
+    assert session.score == 2
+
+
+def test_changing_to_another_wrong_direction_still_counts(session):
+    session.start(20)
+    previous = session.target
+    answer(session)
+    wrong = next(d for d in ("UP", "DOWN", "LEFT", "RIGHT") if d not in (previous, session.target))
+    for _ in range(10):
+        session.update(seen(wrong))
+    assert session.attempts == 2 and session.score == 1

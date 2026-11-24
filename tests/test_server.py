@@ -53,3 +53,31 @@ def test_calibrate_distance_validation(client):
     assert client.post("/calibrate_distance", json={"distance_cm": "x"}).status_code == 400
     assert client.post("/calibrate_distance", json={"distance_cm": 5}).status_code == 400
     assert client.post("/calibrate_distance", json={"distance_cm": 60}).status_code == 409  # camera not started
+
+
+def test_worker_is_built_once_under_concurrency(monkeypatch):
+    import threading
+    import time
+
+    import smartsight.server as server
+
+    calls = []
+
+    class FakeWorker:
+        def frames(self):
+            yield b""
+
+    def slow_build(cfg, session):
+        calls.append(1)
+        time.sleep(0.05)
+        return FakeWorker()
+
+    monkeypatch.setattr(server, "build_worker", slow_build)
+    app = server.create_app(Settings())
+    client = app.test_client()
+    threads = [threading.Thread(target=lambda: client.get("/video_feed")) for _ in range(5)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert len(calls) == 1

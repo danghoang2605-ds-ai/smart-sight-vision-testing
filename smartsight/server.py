@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 
 from flask import Flask, Response, jsonify, render_template, request
 
@@ -31,10 +32,15 @@ def create_app(cfg: Settings = default_settings, session: AcuitySession | None =
     session = session or AcuitySession(cfg)
     app.config["session"] = session
 
+    lock = threading.Lock()
+
     def get_worker():
+        # Two tabs opening /video_feed at once must not load the model or open the camera twice.
         nonlocal worker
         if worker is None:
-            worker = build_worker(cfg, session)
+            with lock:
+                if worker is None:
+                    worker = build_worker(cfg, session)
         return worker
 
     @app.get("/")

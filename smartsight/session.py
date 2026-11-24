@@ -130,8 +130,15 @@ class AcuitySession:
                 self._finish_trial_locked(correct=False, response_time=None)
                 return
 
-            if obs.direction:
+            if obs.direction and obs.direction == self._carryover:
+                # The hand is probably still up from the previous answer: ignore it until the
+                # patient lowers it or changes direction, instead of scoring it as a miss.
+                pass
+            elif obs.direction:
+                self._carryover = None
                 self._votes.append(obs.direction)
+            else:
+                self._carryover = None
             if self._votes:
                 answer = max(set(self._votes), key=self._votes.count)
                 if self._votes.count(answer) >= cfg.votes_needed:
@@ -187,6 +194,7 @@ class AcuitySession:
         self.target = self._rng.choice(DIRECTIONS)
         self._trial_start = self._clock()
         self._missing_frames = 0
+        self._carryover: str | None = None
         self._votes.clear()
 
     def _duration_locked(self) -> int:
@@ -197,6 +205,7 @@ class AcuitySession:
 
     def _next_target_locked(self) -> None:
         # Never repeat the previous direction: a hand still held up would score instantly.
+        self._carryover = self.target
         self.target = self._rng.choice([d for d in DIRECTIONS if d != self.target])
         self._trial_start = self._clock()
         self.time_left = self.cfg.trial_seconds
